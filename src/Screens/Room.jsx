@@ -1,46 +1,65 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { SockerProvider, useSocket } from "../context/SockerProvider";
 import ReactPlayer from "react-player";
 import PeerService from "../service/peer"; // Import the peer service instance
+import { useNavigate } from "react-router-dom";
 
 const Room = () => {
-  const [myEmail, setMyEmail] = useState("");
+  const [myId, setMyId] = useState("");
+  const [allUsers , setAllUsers ] = useState([]);
   const socket = useSocket();
 
-  const handleUserJoined = useCallback(
-    ({ email, id, users }) => {
-      console.log("Received user:joined event:", email, id, users);
-    },
-    [socket]
-  );
-
-  const handleMyCredentials = useCallback(
-    (data) => {
-      const { email } = data;
-      console.log("handleMyCredentials: Setting email to", email);
-      setMyEmail(email);
-    },
-    [socket]
-  );
-
+  //will store all the peer connection storing it in useRef so that values get's persisted when re-render
+  const peers = useRef([]);
+  const navigate = useNavigate();
+  
+  const handleGetUsers = useCallback(({users, id})=>{
+    console.log("in function")
+    setAllUsers(users);
+    setMyId(id);
+  } , [socket]);
+   
+   
   useEffect(() => {
-    socket.on("user:joined", handleUserJoined);
-    if (socket.connected) {
-      socket.on("mycredentials", handleMyCredentials);
-      console.log("Subscribed to mycredentials event");
+    if(socket){
+      socket.on("get:users" , handleGetUsers);
+       window.addEventListener("beforeunload", handledisconnect);
     }
-
-    return () => {
-      socket.off("user:joined", handleUserJoined);
-      socket.off("mycredentials", handleMyCredentials);
-    };
-  }, [socket, handleUserJoined, handleMyCredentials]);
+    return ()=>{
+      socket.off("get:users" , handleGetUsers);
+      window.removeEventListener("beforeunload", handledisconnect);
+    }
+  }, [socket , handleGetUsers]);
 
   useEffect(() => {
-    console.log("myEmail has been updated:", myEmail);
-  }, [myEmail]);
+    if(allUsers.length > 0){
+      allUsers.forEach(element => {
+        
+      });
+    }
+  
+    return () => {
+      
+    }
+  }, [])
+  
 
-  return <div>Room</div>;
+
+
+
+
+ //for disconnection of socket , when we close the tab / or click end user
+  const handledisconnect= ()=>{
+    if(socket){
+      socket.emit("disconnect:me");
+    }
+    navigate('/');
+  }
+
+  return <div>
+    <h1>Room</h1>
+    <button onClick={handledisconnect}>end user</button>
+  </div>;
 };
 
 export default Room;

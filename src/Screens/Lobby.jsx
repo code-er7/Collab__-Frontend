@@ -21,7 +21,7 @@ useEffect(() => {
   // socket.on("mycredentials", handleMyCredentials);
   socket.on("room:join" , handleRoomJoin)
   return ()=>{
-    socket.off('room:join' , handleRoomJoin);
+  socket.off('room:join' , handleRoomJoin);
   }
 }, [socket , handleRoomJoin])
 
