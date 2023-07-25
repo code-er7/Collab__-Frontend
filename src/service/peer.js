@@ -26,7 +26,7 @@ class PeerService {
     }
   }
   //when the user1 will recive a ans from the remoteUser take that ans and setRemoteDescription ans the ans
-  async setRemoteDescription(ans) {
+  async setDescription(ans) {
     if (this.peer) {
       await this.peer.setRemoteDescription(new RTCSessionDescription(ans));
     }
