@@ -1,19 +1,18 @@
-// code for creating a new peer connection 
+// code for creating a new peer connection
 
 class PeerService {
   constructor() {
-    if (!this.peer) {
-      this.peer = new RTCPeerConnection({
-        iceServers: [
-          {
-            urls: [
-              "stun:stun.l.google.com:19302",
-              "stun:global.stun.twilio.com:3478",
-            ],
-          },
-        ],
-      });
-    }
+    this.peer = new RTCPeerConnection({
+      iceServers: [
+        {
+          urls: [
+            "stun:stun.l.google.com:19302",
+            "stun:global.stun.twilio.com:3478",
+          ],
+        },
+      ],
+    });
+    this.mediaStream = null;
   }
   async getAnswer(offer) {
     //when we get an ans we set the remoteDescription as the offer
@@ -39,5 +38,12 @@ class PeerService {
       return offer;
     }
   }
+  transmitLocalMediaToPeers() {
+    if (this.peer && this.mediaStream) {
+      this.mediaStream.getTracks().forEach((track) => {
+        this.peer.addTrack(track, this.mediaStream);
+      });
+    }
+  }
 }
-export default  PeerService;
+export default PeerService;
